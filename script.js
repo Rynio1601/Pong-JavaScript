@@ -6,6 +6,8 @@ let height = canvas.height;
 ctx.fillStyle = "black";
 ctx.fillRect(0, 0, width, height);
 
+const MAX_COMPUTER_SPEED = 2;
+
 const BALL_SIZE = 5;
 let ballPosition;
 
@@ -20,20 +22,18 @@ function initBall() {
 
 const PADDLE_WIDTH = 5;
 const PADDLE_HEIGHT = 20;
-const PADDLE_OFFSET =20;
+const PADDLE_OFFSET = 10;
 
 let leftPaddleTop = 10;
 let rightPaddleTop = 30;
 
 let leftScore = 0;
 let rightScore = 0;
+let gameOver = false;
 
 document.addEventListener("mousemove", e=> {
     rightPaddleTop = e.y - canvas.offsetTop;
 });
-
-ctx.fillStyle = "white";
-ctx.fillRect(ballPosition.x, ballPosition.y, BALL_SIZE, BALL_SIZE);
 
 function draw() {
     ctx.fillStyle = "black";
@@ -63,16 +63,33 @@ function draw() {
     ctx.fillText(rightScore.toString(), width -50, 50);
 }
 
+function followBall() {
+    let ball = {
+        top: ballPosition.y,
+        bottom: ballPosition.y + BALL_SIZE,
+    };
+    let leftPaddle = {
+        top: leftPaddleTop,
+        bottom: leftPaddleTop + PADDLE_HEIGHT
+    };
+
+    if (ball.top < leftPaddle.top) {
+        leftPaddle -= MAX_COMPUTER_SPEED;
+    } else if (ball.bottom > leftPaddle.bottom) {
+        leftPaddleTop += MAX_COMPUTER_SPEED;
+    }
+}
 function update() {
     ballPosition.x += xSpeed;
     ballPosition.y += ySpeed;
+    followBall();
 }
 function checkPaddleCollision(ball, paddle) {
     return (
         ball.left < paddle.right &&
         ball.right > paddle.left &&
         ball.top < paddle.bottom &&
-        ball.bottom > paddle.bottom
+        ball.bottom > paddle.top
     );
 }
 function adjustAngle(distanceFromTop, distanceFromBottom) {
@@ -92,7 +109,7 @@ function checkCollisions() {
     }
     let leftPaddle = {
         left: PADDLE_OFFSET,
-        right: PADDLE_WIDTH + PADDLE_WIDTH,
+        right: PADDLE_OFFSET + PADDLE_WIDTH,
         top: leftPaddleTop,
         bottom: leftPaddleTop + PADDLE_HEIGHT
     };
@@ -125,21 +142,31 @@ function checkCollisions() {
         leftScore++;
         initBall();
     }
-
-    if (ball.left < 0 || ball.right > width) {
-        xSpeed = -xSpeed;
+    if (leftScore > 9 || rightScore > 9) {
+        gameOver = true;
     }
+
     if (ball.top < 0 || ball.bottom > height) {
         ySpeed = -ySpeed;
     }
 }
 
+function drawGameOver() {
+    ctx.fillStyle = "white";
+    ctx.font = "30px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("KONIEC GRY", width / 2, height / 2);
+}
 function gameLoop() {
     draw();
     update();
     checkCollisions();
-
-    setTimeout(gameLoop, 30);
+    if (gameOver) {
+        draw();
+        drawGameOver();
+    } else {
+        setTimeout(gameLoop, 30);
+    }
 }
 
 initBall();
