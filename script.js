@@ -52,6 +52,14 @@ function update() {
     ballPosition.x += xSpeed;
     ballPosition.y += ySpeed;
 }
+function checkPaddleCollision(ball, paddle) {
+    return (
+        ball.left < paddle.right &&
+        ball.right > paddle.left &&
+        ball.top < paddle.bottom &&
+        ball.bottom > paddle.bottom
+    );
+}
 
 function checkCollisions() {
     let ball = {
@@ -59,6 +67,26 @@ function checkCollisions() {
         right: ballPosition.x + BALL_SIZE,
         top: ballPosition.y,
         bottom: ballPosition.y + BALL_SIZE,
+    }
+    let LeftPaddle = {
+        left: PADDLE_OFFSET,
+        right: PADDLE_WIDTH + PADDLE_WIDTH,
+        top: leftPaddleTop,
+        bottom: leftPaddleTop + PADDLE_HEIGHT
+    };
+    let RightPaddle = {
+        left: width - PADDLE_WIDTH - PADDLE_OFFSET,
+        right: width - PADDLE_OFFSET,
+        top: rightPaddleTop,
+        bottom: rightPaddleTop + PADDLE_HEIGHT
+    };
+
+    if (checkPaddleCollision(ball, leftPaddle)) {
+        xSpeed = Math.abs(xSpeed);
+    }
+
+    if (checkPaddleCollision(ball, rightPaddle)) {
+        xSpeed = -Math.abs(xSpeed);
     }
     if (ball.left < 0 || ball.right > width) {
         xSpeed = -xSpeed;
